@@ -8,8 +8,7 @@ Please note that porymon does **NOT** work with [vanilla pokeemerald](https://gi
 
 ## How to use porymon
 
-To use porymon simply download the **ZIP** file directly from GitHub or clone the repo to you local machine.
-![download.png](https://github.com/CallmeEchoo/porymon/blob/main/download.png)
+To use porymon simply download it from the release page and follow the instructions below.
 
 - Extract the porymon folder inside anywhere to you PC.
 - Navigate inside the porymon folder and open the `config.json`.
