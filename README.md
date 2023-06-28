@@ -16,7 +16,7 @@ To use porymon simply download it from the release page and follow the instructi
     - please not that you destination folder might be named differently. Please use whatever your root directory. It is the one that contains the makefile.
     - os specific path separators matter! use the correct one.
 - Create a new folder and name it after your new pokemon.
-- Copy the `pokemon_data.json` from the `examples` folder into your newly created folder and fill out all the information inside of it.
+- Copy the `pokemon_data.json` from the example folder `potato` into your newly created folder and fill out all the information inside of it.
     - most of these things should be self explanatory, however make sure to use the proper macros or literals where ever necessary.
     - E.g. to assign the move "Growl" to a movepool use either `MOVE_GROWL` or `45`. I advice to use the macros however.
 - Move the assets for front pic, back pic, icon and footprints into the same folder and name them as follows:
@@ -30,6 +30,7 @@ To use porymon simply download it from the release page and follow the instructi
     - shiny pal  : `shiny.pal`
 - Open a terminal and navigate into your porymon directory.
 - Run `python3 porymon.py 'pokemonname'` and replace 'pokemonname' with whatever you named your folder.
+    - to test the program you may insert the example pokemon `potato`. simply run `python3 porymon.py potato` from inside your porymon directory.
     - depending on your python version or system setting try `python porymon.py 'pokemonname'` or `py porymon.py 'pokemonname'`. To use a specific version of python run `py -'version' porymon.py 'pokemonname'`
 - After porymon has edited all the necessary files it will prompt you with an option to restore all files to the state they were when porymon first loaded them. I encourage you to test all changes before committing to them.
 
