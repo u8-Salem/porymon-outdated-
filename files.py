@@ -612,7 +612,7 @@ class TeachableLearnsetPointersH(HeaderFile):
         super().__init__(path)
 
     def appendData(self, species: str, prevMon: str):
-        idx = self.findLine(f'SPECIES_{prevMon.upper()}')
+        idx = self.findLine(f'SPECIES_{prevMon.upper()}') + 1
         idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    [SPECIES_{species.upper()}] = s{species.title()}TeachableLearnset,\n')
