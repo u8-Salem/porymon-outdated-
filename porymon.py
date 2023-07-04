@@ -13,9 +13,9 @@ import sys
 import os
 import shutil
 
-from files import *
+from file_handler import *
+from expansion.files import *
 from pory_util import pjoin
-
 
 
 def main():
@@ -28,7 +28,15 @@ def main():
     pory_path = os.path.dirname(os.path.abspath(__file__))
     species = sys.argv[1]
 
-    if not (os.path.exists(pjoin(pory_path, species))) or not assetsExist(pory_path):
+    # load config data
+    config = Config(pjoin(pory_path, "config.json"))
+
+    if config.pokeemerald_expansion:
+        version_path = "expansion"
+    else:
+        version_path = "vanilla"
+
+    if not (os.path.exists(pjoin(pory_path, version_path, species))) or not assetsExist(pjoin(pory_path, version_path, species)):
         raise FileNotFoundError('''
     Could not find matching directory!
 
@@ -56,9 +64,8 @@ def main():
     src_data_pokemon = pjoin("src", "data", "pokemon")
     src_data_pokemon_graphics = pjoin("src", "data", "pokemon_graphics")
 
-    # load json files
-    config = Config(pjoin(pory_path, "config.json"))
-    pokemon_data = PokemonData(pjoin(pory_path, species, "pokemon_data.json"))
+    # load data json
+    pokemon_data = PokemonData(pjoin(pory_path, version_path, species, "pokemon_data.json"))
 
     # load and edit c files
     # Species definitions
@@ -143,7 +150,7 @@ def main():
         egg_moveset = EggMovesH(pjoin(config.pokeemerald_path, src_data_pokemon, "egg_moves.h"))
         egg_moveset.appendData(pokemon_data.formated_egg_moveset, species_header.prev_mon_name)
 
-    copyAssets(pory_path, pjoin(config.pokeemerald_path, "graphics", "pokemon", str(species).lower()))
+    copyAssets(pjoin(pory_path, version_path, species), pjoin(config.pokeemerald_path, "graphics", "pokemon", str(species).lower()))
     writeBackAll()
 
     print('''
@@ -174,21 +181,21 @@ def writeBackAll():
     for instance in HeaderFile.instances:
         instance.writeBack()
 
-def assetsExist(pory_path):
+def assetsExist(path):
     assets = ["anim_front.png", "back.png", "footprint.png", "icon.png", "normal.pal", "shiny.pal"]
     for asset in assets:
-        if os.path.isfile(pjoin(pory_path, species, asset)):
-            print(pjoin(pory_path, asset), " found!")
+        if os.path.isfile(pjoin(path, asset)):
+            print(pjoin(path, asset), " found!")
         else:
-            raise FileNotFoundError(pjoin(pory_path, asset), " not found!")
+            raise FileNotFoundError(pjoin(path, asset), " not found!")
 
     return True
 
-def copyAssets(pory_path, dst):
+def copyAssets(path, dst):
     os.mkdir(pjoin(dst))
     assets = ["anim_front.png", "back.png", "footprint.png", "icon.png", "normal.pal", "shiny.pal"]
     for asset in assets:
-        shutil.copy(pjoin(pory_path, species, asset), pjoin(dst, asset))
+        shutil.copy(pjoin(path, asset), pjoin(dst, asset))
 
 
 if __name__ == '__main__':
