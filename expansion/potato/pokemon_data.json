@@ -31,6 +31,11 @@
             "abilityHidden" : "ABILITY_RIPEN"
         },
 
+        "items" : {
+            "itemCommon"    : "ITEM_ORAN_BERRY",
+            "itemRare"      : "ITEM_MOON_STONE"
+        },
+
         "catchRate"   : 255,
         "expYield"    : 600,
         "genderRatio" : 255,
@@ -57,9 +62,9 @@
 
         "description" : {
             "descLine1" : "This is not a actually Pokémon.",
-            "descLine2" : "It's really just a Tomato.",
-            "descLine3" : "Dont ask me why Tomato. I dont even",
-            "descLine4" : "like tomatos."
+            "descLine2" : "It's really just a potato",
+            "descLine3" : "Dont ask me why potato. Maybe because",
+            "descLine4" : "I like potatos."
         }
     },
 

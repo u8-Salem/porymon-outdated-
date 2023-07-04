@@ -22,6 +22,8 @@ def formatSpeciesInfo(name, species_info):
         .evYield_SpAttack  = {species_info["evYield"]["evYield_SpAttack"]},
         .evYield_SpDefense = {species_info["evYield"]["evYield_SpDefense"]},
         .evYield_Speed     = {species_info["evYield"]["evYield_Speed"]},
+        .itemCommon = {species_info["items"]["itemCommon"]},
+        .itemRare = {species_info["items"]["itemRare"]},
         .genderRatio = {species_info["genderRatio"]},
         .eggCycles = {species_info["eggCycles"]},
         .friendship = {species_info["friendship"]},

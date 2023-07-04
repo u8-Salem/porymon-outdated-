@@ -1,4 +1,3 @@
-/__pycache__
+__pycache__
 /.vscode
-test.py
-config_copy.json
+porymon.code-workspace
