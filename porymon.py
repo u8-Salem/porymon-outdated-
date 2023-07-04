@@ -71,6 +71,9 @@ def main():
     species_info = SpeciesInfoH(pjoin(config.pokeemerald_path, src_data_pokemon, "species_info.h"))
     species_info.appendData(pokemon_data.formated_species_info, species_header.prev_mon_name)
 
+    pokemon_source = PokemonC(pjoin(config.pokeemerald_path, "src", "pokemon.c"))
+    pokemon_source.appendData(pokemon_data.species, species_header.prev_mon_name)
+
     # Pokedex
     pokedex_header = PokedexH(pjoin(config.pokeemerald_path, include_constants, "pokedex.h"))
     pokedex_header.appendData(pokemon_data.species, species_header.prev_mon_name)
