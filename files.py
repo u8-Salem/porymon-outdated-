@@ -653,10 +653,10 @@ class PokemonC(SourceFile):
         self.set_line(idx, f'    SPECIES_TO_NATIONAL({species.upper()}),\n')
 
         # front anim table
-        idx = self.findLine(f'SPECIES_{prevMon.title()}') + 1
+        idx = self.findLine(f'SPECIES_{prevMon.upper()} - 1') + 1
         idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
-        self.set_line(idx, f'    [SPECIES_{species.upper()}] - 1'.ljust(32) + f'= {animation.upper()},\n')
+        self.set_line(idx, f'    [SPECIES_{species.upper()} - 1]'.ljust(32) + f'= {animation.upper()},\n')
 
 class PokemonIconC(SourceFile):
     def __init__(self, path: str):
