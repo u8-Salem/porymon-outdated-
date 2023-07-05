@@ -66,7 +66,9 @@ def formatEvolutionData(name, evolution_data):
     if len(evolution_data) <= 0: #safety
         return ""
 
-    formated_evolution_data = f'    [SPECIES_{name.upper()}]'.ljust(36) + '= {' + f'{{{evolution_data[0]["method"]}, {evolution_data[0]["param"]}, {evolution_data[0]["targetSpecies"]}}}' + ",\n" if len(evolution_data) > 1 - 1 else ""
+    formated_evolution_data = f'    [SPECIES_{name.upper()}]'.ljust(36) + '= {' + f'{{{evolution_data[0]["method"]}, {evolution_data[0]["param"]}, {evolution_data[0]["targetSpecies"]}}}'
+    if len(evolution_data) > 1:
+        formated_evolution_data += ",\n"
     for i in range(1, len(evolution_data)):
         formated_evolution_data += "".ljust(39) + f'{{{evolution_data[i]["method"]}, {evolution_data[i]["param"]}, {evolution_data[i]["targetSpecies"]}}}'
         if i < len(evolution_data)-1:
