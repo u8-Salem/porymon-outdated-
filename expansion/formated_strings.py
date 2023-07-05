@@ -101,7 +101,7 @@ def formatEggMoveset(name, egg_moveset):
     return formated_egg_moveset
 
 def formatPicCoordinates(name, pic_coordinates):
-    formated_pic_coordinates = f'    [SPECIES_{name.upper()}]'.ljust(43) + f'= {{ .size = MON_COORDS_SIZE({pic_coordinates["x"]}, {pic_coordinates["y"]}), .y_offset = {pic_coordinates["y_offset"]} }},\n'
+    formated_pic_coordinates = f'    [SPECIES_{name.upper()}]'.ljust(43) + f'= {{ .size = MON_COORDS_SIZE({pic_coordinates["x"]}, {pic_coordinates["y"]}), .y_offset = {" " if pic_coordinates["y_offset"] < 10 else ""}{pic_coordinates["y_offset"]} }},\n'
     return formated_pic_coordinates
 
 def formatFrontPicAnim(name):
