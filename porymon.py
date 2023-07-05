@@ -192,7 +192,8 @@ def assetsExist(path):
     return True
 
 def copyAssets(path, dst):
-    os.mkdir(pjoin(dst))
+    if not os.path.exists(dst):
+        os.mkdir(pjoin(dst))
     assets = ["anim_front.png", "back.png", "footprint.png", "icon.png", "normal.pal", "shiny.pal"]
     for asset in assets:
         shutil.copy(pjoin(path, asset), pjoin(dst, asset))
