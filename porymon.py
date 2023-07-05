@@ -20,7 +20,7 @@ class Config(JsonFile):
 
     def _initData(self):
         self.pokeemerald_path = self._file["pokeemerald-path"]
-        self.pokeemerald_expansion = self._file["pokeemerald-expansion"]
+        self.pokeemerald_version = self._file["pokeemerald-version"]
 
 def main():
     global species
@@ -36,12 +36,8 @@ def main():
     config = Config(pjoin(pory_path, "config.json"))
 
     # configure path and module
-    if config.pokeemerald_expansion:
-        version_path = "expansion"
-        module = importlib.import_module('expansion.files')
-    else:
-        version_path = "vanilla"
-        module = importlib.import_module('vanilla.files')
+    version_path = config.pokeemerald_version
+    module = importlib.import_module(f'{config.pokeemerald_version}.files')
 
     # raise error if some asset or the directory does not exist
     if not (os.path.exists(pjoin(pory_path, version_path, species))) or not assetsExist(pjoin(pory_path, version_path, species)):
