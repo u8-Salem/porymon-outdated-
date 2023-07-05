@@ -1,12 +1,3 @@
-'''
-this file contains several classes that represent the files that get read, written or otherwise
-modified. This is in an attempt to make the process as modular as possible
-Should any changes be made to the basic structure of the files in the future, either through upstream changes
-or custom changes on the users end, this provides a way to keep the required effort to maintain and ensure
-compatibility as low as possible.
-
-Since this is my first real application this might be a fruitless endeavor but its the best I can come up with.
-'''
 import sys
 import re
 import json

@@ -1,11 +1,4 @@
 '''
-if there are any issues with this tool please contact me on discord
-or create an issue on github.
-
-Please download this tool only from the official release section on my Github.
-Should you have acquired this tool from any other source than the official Github page
-I can not guarantee for its safety.
-
 Github: https://github.com/CallmeEchoo
 Discord: u8.salem
 '''
