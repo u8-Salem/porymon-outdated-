@@ -112,15 +112,3 @@ class HeaderFile(CFile):
 class SourceFile(CFile):
     def __init__(self, path: str):
         super().__init__(path)
-
-#######################
-# Child Classes PoryMon
-#######################
-
-class Config(JsonFile):
-    def __init__(self, path: str):
-        super().__init__(path)
-
-    def _initData(self):
-        self.pokeemerald_path = self._file["pokeemerald-path"]
-        self.pokeemerald_expansion = self._file["pokeemerald-expansion"]

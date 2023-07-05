@@ -11,7 +11,7 @@ import sys
 import re
 import json
 
-from file_handler import *
+from file_types import *
 from expansion.formated_strings import *
 
 ######################
