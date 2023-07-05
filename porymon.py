@@ -12,11 +12,22 @@ Discord: u8.salem
 import sys
 import os
 import shutil
+import importlib
 
-from file_handler import *
-from expansion.files import *
+from file_types import *
 from pory_util import pjoin
 
+#########################
+# Child Classes PoryMon #
+#########################
+
+class Config(JsonFile):
+    def __init__(self, path: str):
+        super().__init__(path)
+
+    def _initData(self):
+        self.pokeemerald_path = self._file["pokeemerald-path"]
+        self.pokeemerald_expansion = self._file["pokeemerald-expansion"]
 
 def main():
     global species
@@ -31,11 +42,15 @@ def main():
     # load config data
     config = Config(pjoin(pory_path, "config.json"))
 
+    # configure path and module
     if config.pokeemerald_expansion:
         version_path = "expansion"
+        module = importlib.import_module('expansion.files')
     else:
         version_path = "vanilla"
+        module = importlib.import_module('vanilla.files')
 
+    # raise error if some asset or the directory does not exist
     if not (os.path.exists(pjoin(pory_path, version_path, species))) or not assetsExist(pjoin(pory_path, version_path, species)):
         raise FileNotFoundError('''
     Could not find matching directory!
@@ -59,97 +74,7 @@ def main():
     "python3 porymon.py tomato" or "python porymon.py tomato"
 ''')
 
-    # common paths
-    include_constants = pjoin("include", "constants")
-    src_data_pokemon = pjoin("src", "data", "pokemon")
-    src_data_pokemon_graphics = pjoin("src", "data", "pokemon_graphics")
-
-    # load data json
-    pokemon_data = PokemonData(pjoin(pory_path, version_path, species, "pokemon_data.json"))
-
-    # load and edit c files
-    # Species definitions
-    species_header = SpeciesH(pjoin(config.pokeemerald_path, include_constants, "species.h"))
-    species_header.appendData(pokemon_data.species)
-
-    species_names = SpeciesNamesH(pjoin(config.pokeemerald_path, "src", "data", "text", "species_names.h"))
-    species_names.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    species_info = SpeciesInfoH(pjoin(config.pokeemerald_path, src_data_pokemon, "species_info.h"))
-    species_info.appendData(pokemon_data.formated_species_info, species_header.prev_mon_name)
-
-    pokemon_source = PokemonC(pjoin(config.pokeemerald_path, "src", "pokemon.c"))
-    pokemon_source.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    # Pokedex
-    pokedex_header = PokedexH(pjoin(config.pokeemerald_path, include_constants, "pokedex.h"))
-    pokedex_header.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    pokedex_entry = PokedexEntryH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_entries.h"))
-    pokedex_entry.appendData(pokemon_data.formated_pokedex_data, species_header.prev_mon_name)
-
-    pokedex_text = PokedexTextH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_text.h"))
-    pokedex_text.appendData(pokemon_data.formated_pokedex_text, species_header.prev_mon_name)
-
-    pokedex_orders = PokedexOrdersH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_orders.h"), pokedex_entry)
-    pokedex_orders.appendData(pokemon_data.species, pokemon_data._pokedex_data["height"], pokemon_data._pokedex_data["weight"])
-
-    # Evolution
-    if pokemon_data.hasEvo:
-        evolution_data = EvolutionH(pjoin(config.pokeemerald_path, src_data_pokemon, "evolution.h"))
-        evolution_data.appendData(pokemon_data.formated_evolution_data)
-
-    # Grapics
-    graphics_declaration = GraphicsH(pjoin(config.pokeemerald_path, "include", "graphics.h"))
-    graphics_declaration.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    pokemon_header = PokemonH(pjoin(config.pokeemerald_path, "src", "data", "graphics", "pokemon.h"))
-    pokemon_header.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    pokemon_icon = PokemonIconC(pjoin(config.pokeemerald_path, "src", "pokemon_icon.c"))
-    pokemon_icon.appendData(pokemon_data.species, species_header.prev_mon_name, pokemon_data.icon_pal_num)
-
-    pokemon_animation = PokemonAnimationC(pjoin(config.pokeemerald_path, "src", "pokemon_animation.c"))
-    pokemon_animation.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    back_pic_table = BackPicTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "back_pic_table.h"))
-    back_pic_table.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    front_pic_table = FrontPicTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_table.h"))
-    front_pic_table.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    back_pic_coordinates = BackPicCoordinatesH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "back_pic_coordinates.h"))
-    back_pic_coordinates.appendData(species_header.prev_mon_name, pokemon_data.formated_back_pic_coordinates)
-
-    front_pic_coordinates = FrontPicCoordinatesH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_coordinates.h"))
-    front_pic_coordinates.appendData(species_header.prev_mon_name, pokemon_data.formated_front_pic_coordinates)
-
-    front_pic_anims = FrontPicAnimsH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_anims.h"))
-    front_pic_anims.appendData(pokemon_data.species, species_header.prev_mon_name, pokemon_data.formated_front_pic_anim)
-
-    palette_table = PaletteTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "palette_table.h"))
-    palette_table.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    shiny_palette_table = ShinyPaletteTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "shiny_palette_table.h"))
-    shiny_palette_table.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    # movesets
-    level_up_learnset = LevelUpLearnsetsH(pjoin(config.pokeemerald_path, src_data_pokemon, "level_up_learnsets.h"))
-    level_up_learnset.appendData(pokemon_data.formated_level_up_moveset, species_header.prev_mon_name)
-
-    level_up_learnset_pointers = LevelUpLearnsetPointersH(pjoin(config.pokeemerald_path, src_data_pokemon, "level_up_learnset_pointers.h"))
-    level_up_learnset_pointers.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    teachable_lernset = TeachableLearnsetH(pjoin(config.pokeemerald_path, src_data_pokemon, "teachable_learnsets.h"))
-    teachable_lernset.appendData(pokemon_data.formated_teachable_moveset, species_header.prev_mon_name)
-
-    teachable_lernset_pointers = TeachableLearnsetPointersH(pjoin(config.pokeemerald_path, src_data_pokemon, "teachable_learnset_pointers.h"))
-    teachable_lernset_pointers.appendData(pokemon_data.species, species_header.prev_mon_name)
-
-    if pokemon_data.hasEggMove:
-        egg_moveset = EggMovesH(pjoin(config.pokeemerald_path, src_data_pokemon, "egg_moves.h"))
-        egg_moveset.appendData(pokemon_data.formated_egg_moveset, species_header.prev_mon_name)
-
+    editFiles(pory_path, version_path, config, module)
     copyAssets(pjoin(pory_path, version_path, species), pjoin(config.pokeemerald_path, "graphics", "pokemon", str(species).lower()))
     writeBackAll()
 
@@ -197,6 +122,98 @@ def copyAssets(path, dst):
     assets = ["anim_front.png", "back.png", "footprint.png", "icon.png", "normal.pal", "shiny.pal"]
     for asset in assets:
         shutil.copy(pjoin(path, asset), pjoin(dst, asset))
+
+def editFiles(pory_path, version_path, config, module):
+    # common paths
+    include_constants = pjoin("include", "constants")
+    src_data_pokemon = pjoin("src", "data", "pokemon")
+    src_data_pokemon_graphics = pjoin("src", "data", "pokemon_graphics")
+
+    # load data json
+    pokemon_data = module.PokemonData(pjoin(pory_path, version_path, species, "pokemon_data.json"))
+
+    # load and edit c files
+    # Species definitions
+    species_header = module.SpeciesH(pjoin(config.pokeemerald_path, include_constants, "species.h"))
+    species_header.appendData(pokemon_data.species)
+
+    species_names = module.SpeciesNamesH(pjoin(config.pokeemerald_path, "src", "data", "text", "species_names.h"))
+    species_names.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    species_info = module.SpeciesInfoH(pjoin(config.pokeemerald_path, src_data_pokemon, "species_info.h"))
+    species_info.appendData(pokemon_data.formated_species_info, species_header.prev_mon_name)
+
+    pokemon_source = module.PokemonC(pjoin(config.pokeemerald_path, "src", "pokemon.c"))
+    pokemon_source.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    # Pokedex
+    pokedex_header = module.PokedexH(pjoin(config.pokeemerald_path, include_constants, "pokedex.h"))
+    pokedex_header.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    pokedex_entry = module.PokedexEntryH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_entries.h"))
+    pokedex_entry.appendData(pokemon_data.formated_pokedex_data, species_header.prev_mon_name)
+
+    pokedex_text = module.PokedexTextH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_text.h"))
+    pokedex_text.appendData(pokemon_data.formated_pokedex_text, species_header.prev_mon_name)
+
+    pokedex_orders = module.PokedexOrdersH(pjoin(config.pokeemerald_path, src_data_pokemon, "pokedex_orders.h"), pokedex_entry)
+    pokedex_orders.appendData(pokemon_data.species, pokemon_data._pokedex_data["height"], pokemon_data._pokedex_data["weight"])
+
+    # Evolution
+    if pokemon_data.hasEvo:
+        evolution_data = module.EvolutionH(pjoin(config.pokeemerald_path, src_data_pokemon, "evolution.h"))
+        evolution_data.appendData(pokemon_data.formated_evolution_data)
+
+    # Grapics
+    graphics_declaration = module.GraphicsH(pjoin(config.pokeemerald_path, "include", "graphics.h"))
+    graphics_declaration.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    pokemon_header = module.PokemonH(pjoin(config.pokeemerald_path, "src", "data", "graphics", "pokemon.h"))
+    pokemon_header.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    pokemon_icon = module.PokemonIconC(pjoin(config.pokeemerald_path, "src", "pokemon_icon.c"))
+    pokemon_icon.appendData(pokemon_data.species, species_header.prev_mon_name, pokemon_data.icon_pal_num)
+
+    pokemon_animation = module.PokemonAnimationC(pjoin(config.pokeemerald_path, "src", "pokemon_animation.c"))
+    pokemon_animation.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    back_pic_table = module.BackPicTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "back_pic_table.h"))
+    back_pic_table.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    front_pic_table = module.FrontPicTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_table.h"))
+    front_pic_table.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    back_pic_coordinates = module.BackPicCoordinatesH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "back_pic_coordinates.h"))
+    back_pic_coordinates.appendData(species_header.prev_mon_name, pokemon_data.formated_back_pic_coordinates)
+
+    front_pic_coordinates = module.FrontPicCoordinatesH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_coordinates.h"))
+    front_pic_coordinates.appendData(species_header.prev_mon_name, pokemon_data.formated_front_pic_coordinates)
+
+    front_pic_anims = module.FrontPicAnimsH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "front_pic_anims.h"))
+    front_pic_anims.appendData(pokemon_data.species, species_header.prev_mon_name, pokemon_data.formated_front_pic_anim)
+
+    palette_table = module.PaletteTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "palette_table.h"))
+    palette_table.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    shiny_palette_table = module.ShinyPaletteTableH(pjoin(config.pokeemerald_path, src_data_pokemon_graphics, "shiny_palette_table.h"))
+    shiny_palette_table.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    # movesets
+    level_up_learnset = module.LevelUpLearnsetsH(pjoin(config.pokeemerald_path, src_data_pokemon, "level_up_learnsets.h"))
+    level_up_learnset.appendData(pokemon_data.formated_level_up_moveset, species_header.prev_mon_name)
+
+    level_up_learnset_pointers = module.LevelUpLearnsetPointersH(pjoin(config.pokeemerald_path, src_data_pokemon, "level_up_learnset_pointers.h"))
+    level_up_learnset_pointers.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    teachable_lernset = module.TeachableLearnsetH(pjoin(config.pokeemerald_path, src_data_pokemon, "teachable_learnsets.h"))
+    teachable_lernset.appendData(pokemon_data.formated_teachable_moveset, species_header.prev_mon_name)
+
+    teachable_lernset_pointers = module.TeachableLearnsetPointersH(pjoin(config.pokeemerald_path, src_data_pokemon, "teachable_learnset_pointers.h"))
+    teachable_lernset_pointers.appendData(pokemon_data.species, species_header.prev_mon_name)
+
+    if pokemon_data.hasEggMove:
+        egg_moveset = module.EggMovesH(pjoin(config.pokeemerald_path, src_data_pokemon, "egg_moves.h"))
+        egg_moveset.appendData(pokemon_data.formated_egg_moveset, species_header.prev_mon_name)
 
 
 if __name__ == '__main__':
