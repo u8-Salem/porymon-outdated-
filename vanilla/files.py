@@ -3,7 +3,7 @@ import re
 import json
 
 from file_types import *
-from expansion.formated_strings import *
+from vanilla.formated_strings import *
 
 ######################
 # JSON files porymon #
@@ -40,9 +40,12 @@ class PokemonData(JsonFile):
 
     def _initMoveData(self):
         self._level_up_learnset = self._file["level_up_learnset"]
-        self._teachable_learnset = self._file["teachable_learnset"]
+        self._tmhm_learnset = self._file["tmhm_learnset"]
+        self._tutor_learnset = self._file["tutor_learnset"]
         self._egg_learnset = self._file["egg_learnset"]
         self.hasEggMove = True if len(self._file["egg_learnset"]) > 0 else False
+        self.hasTMHMMove = True if len(self._file["tmhm_learnset"]) > 0 else False
+        self.hasTutorMove = True if len(self._file["tutor_learnset"]) > 0 else False
         self._formatLearnsets()
 
     def _initPicData(self):
@@ -63,7 +66,8 @@ class PokemonData(JsonFile):
         self.formated_evolution_data = formatEvolutionData(self.species, self._evolution_data)
     def _formatLearnsets(self):
         self.formated_level_up_learnset = formatLevelUplearnset(self.species, self._level_up_learnset)
-        self.formated_teachable_learnset = formatTeachablelearnset(self.species, self._teachable_learnset)
+        self.formated_tmhm_learnset = formatTMHMLearnset(self.species, self._tmhm_learnset)
+        self.formated_tutor_learnset = formatTutorLearnset(self.species, self._tutor_learnset)
         self.formated_egg_learnset = formatEgglearnset(self.species, self._egg_learnset)
     def _formatPicCoordinates(self):
         self.formated_back_pic_coordinates = formatPicCoordinates(self.species, self._back_pic_coordinates)
@@ -84,38 +88,35 @@ class SpeciesH(HeaderFile):
         return False if self.findLine(f"#define SPECIES_{species.upper()}") == -1 else True
 
     def _findPrevMon(self):
-        pattern = re.compile(r"#define SPECIES_(\w+)\s+(\d+)")
-        self.prevSpeciesNum = -1
-
-        for count, line in enumerate(self._file):
-            match = re.search(pattern, line)
-            if match:
-                name = match.group(1)
-                val = int(match.group(2))
-                if val > self.prevSpeciesNum:
-                    self.prevSpecies = name
-                    self.prevSpeciesNum = val
-                    self.prevSpeciesIdx = count
-
+        self.eggIdx = self.findLine('#define SPECIES_EGG')
+        match = re.search(r"#define\s+SPECIES_(\w+)\s+(\d+)", self.get_line(self.eggIdx-1))
+        if match:
+            self.prevSpecies = match.group(1)
+            self.prevSpeciesNum = int(match.group(2))
+        else:
+            raise Error("previous species not found.")
 
     def appendData(self, species):
-        if self.pokemonExists(species):
-            print(f"Species is already defined!")
-            sys.exit()
-
-        # add definition
-        self.set_line(self.prevSpeciesIdx + 1, f"#define SPECIES_{species.upper()} {self.prevSpeciesNum + 1}\n\n")
-        # update FORMS_START
-        self.set_line(self.findLine("#define FORMS_START"), f"#define FORMS_START SPECIES_{species.upper()}\n")
-
+        self.insertBlankLine(self.eggIdx)
+        self.set_line(self.eggIdx, f"#define SPECIES_{species.upper()} {self.prevSpeciesNum+1}\n")
+        self.set_line(self.eggIdx+1, f'#define SPECIES_EGG {self.prevSpeciesNum+2}\n')
+        if self.prevSpecies == "CHIMECHO":
+            match = re.search(r"#define\s+SPECIES_(\w+)\s+(\d+)", self.get_line(self.eggIdx-2))
+            if match:
+                self.prevSpecies = match.group(1)
+                self.prevSpeciesNum = int(match.group(2))
+            else:
+                raise Error("previous species not found.")
 
 class SpeciesInfoH(HeaderFile):
     def __init__(self, path):
         super().__init__(path)
 
     def appendData(self, formated_species_info: str, prevMon: str = "BULBASAUR"):
-        idx = self.findLine("    },\n", self.findLine(prevMon.upper())) + 1
-        idx = self._handleEndif(idx)
+        idx = self.findLine("    }", self.findLine(prevMon.upper()))
+        if not ',' in self.get_line(idx):
+            self.set_line(idx, "    },\n")
+        idx += 1
         self.insertBlankLine(idx)
         self.set_line(idx, formated_species_info)
 
@@ -125,7 +126,6 @@ class SpeciesNamesH(HeaderFile):
 
     def appendData(self, species, prevMon):
         idx = self.findLine(f'SPECIES_{prevMon.upper()}') + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    [SPECIES_{species.upper()}] = _(\"{species.title()}\"),\n')
 
@@ -141,7 +141,7 @@ class PokedexH(HeaderFile):
 
         # update NATIONAL_DEX_COUNT
         idx = self.findLine("#define NATIONAL_DEX_COUNT", idx)
-        self.set_line(idx, f"   #define NATIONAL_DEX_COUNT  NATIONAL_DEX_{species.upper()}\n")
+        self.set_line(idx, f"#define NATIONAL_DEX_COUNT  NATIONAL_DEX_{species.upper()}\n")
 
 
 class PokedexEntryH(HeaderFile):
@@ -150,7 +150,6 @@ class PokedexEntryH(HeaderFile):
 
     def appendData(self, formated_pokedex_entry: str, prevMon: str = "BULBASAUR"):
         idx = self.findLine("},", self.findLine(prevMon.upper())) + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, formated_pokedex_entry)
 
@@ -160,7 +159,6 @@ class PokedexTextH(HeaderFile):
 
     def appendData(self, formated_pokedex_text: str, prevMon: str = "BULBASAUR"):
         idx = self.findLine(");", self.findLine(prevMon.title())) + 1
-        self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, formated_pokedex_text)
 
@@ -175,20 +173,17 @@ class PokedexOrdersH(HeaderFile):
 
     def appendData(self, species, speciesHeight, speciesWeight):
         # alphabetical
-        idx = self.findLine(self._findPrevMonByAlpha(species), self.findLine("gPokedexOrder_Alphabetical"))
-        idx = self._handleEndif(idx)
+        idx = self.findLine(self._findPrevMonByAlpha(species), self.findLine("gPokedexOrder_Alphabetical")) + 1
         self.insertBlankLine(idx)
         self.set_line(idx, f'    NATIONAL_DEX_{species.upper()},\n')
 
         # weigh
         idx = self.findLine(self._findPrevMonByWeight(speciesWeight), self.findLine("gPokedexOrder_Weight")) + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    NATIONAL_DEX_{species.upper()},\n')
 
         # height
         idx = self.findLine(self._findPrevMonByHeight(speciesHeight), self.findLine("gPokedexOrder_Height")) + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    NATIONAL_DEX_{species.upper()},\n')
 
@@ -237,7 +232,6 @@ class PokedexOrdersH(HeaderFile):
 
         return self._data
 
-
 class EvolutionH(HeaderFile):
     def __init__(self, path: str):
         super().__init__(path)
@@ -257,42 +251,21 @@ class GraphicsH(HeaderFile):
         super().__init__(path)
 
     def appendData(self, species: str, prevMon: str = "BULBASAUR"):
-        # front pic
-        idx = self.findLine(f'gMonFrontPic_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u32 gMonFrontPic_{species.title()}[];\n')
 
-        # back pic
-        idx = self.findLine(f'gMonBackPic_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u32 gMonBackPic_{species.title()}[];\n')
+        strings = [f'extern const u32 gMonFrontPic_{species.title()}[];\n',
+                   f'extern const u32 gMonPalette_{species.title()}[];\n',
+                   f'extern const u32 gMonBackPic_{species.title()}[];\n',
+                   f'extern const u32 gMonShinyPalette_{species.title()}[];\n',
+                   f'extern const u32 gMonStillFrontPic_{species.title()}[];\n',
+                   f'extern const u8 gMonIcon_{species.title()}[];\n',
+                   f'extern const u8 gMonFootprint_{species.title()}[];\n']
 
-        # palette
-        idx = self.findLine(f'gMonPalette_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u32 gMonPalette_{species.title()}[];\n')
-
-        # shiny palette
-        idx = self.findLine(f'gMonShinyPalette_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u32 gMonShinyPalette_{species.title()}[];\n')
-
-        # icon
-        idx = self.findLine(f'gMonIcon_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u8 gMonIcon_{species.title()}[];\n')
-
-        #footprint
         idx = self.findLine(f'gMonFootprint_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'extern const u8 gMonFootprint_{species.title()}[];\n')
 
+        for string in strings:
+            self.insertBlankLine(idx)
+            self.set_line(idx, string)
+            idx += 1
 
 class BackPicTableH(HeaderFile):
     def __init__(self, path: str):
@@ -334,6 +307,15 @@ class FrontPicCoordinatesH(HeaderFile):
         self.insertBlankLine(idx)
         self.set_line(idx, formated_front_pic_coordinates)
 
+class StillFrontPicTableH(HeaderFile):
+    def __init__(self, path: str):
+        super().__init__(path)
+
+    def appendData(self, species: str, prevMon: str):
+        idx = self.findLine(f'SPECIES_SPRITE({prevMon.upper()},') + 1
+        self.insertBlankLine(idx)
+        self.set_line(idx, f'    SPECIES_SPRITE({species.upper()},'.ljust(34) + f'gMonStillFrontPic_{species.title()}),\n')
+
 class FrontPicAnimsH(HeaderFile):
     def __init__(self, path: str):
         super().__init__(path)
@@ -341,12 +323,13 @@ class FrontPicAnimsH(HeaderFile):
     def appendData(self, species, prevMon, formated_front_pic_anim):
         # anim table
         idx = self.findLine("};", self.findLine(f'sAnim_{prevMon.title()}_1')) + 1
-        idx = self._handleEndif(idx)
+        if self.findLine(f'sAnim_{prevMon.title()}_2', idx) > -1:
+            idx = self.findLine("};", self.findLine(f'sAnim_{prevMon.title()}_2')) + 1
         self.insertBlankLine(idx)
         self.set_line(idx, formated_front_pic_anim)
 
         # single anim
-        idx = self.findLine(f'SINGLE_ANIMATION({prevMon.title()})') + 1
+        idx = self.findLine(f'_ANIMATION({prevMon.title()})') + 1
         idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'SINGLE_ANIMATION({species.title()});\n')
@@ -363,7 +346,6 @@ class FootprintTableH(HeaderFile):
 
     def appendData(self, species, prevMon):
         idx = self.findLine(f'SPECIES_{prevMon.upper()}') + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    [SPECIES_{species.upper()}] = gMonFootprint_{species.title()},\n')
 
@@ -392,41 +374,22 @@ class PokemonH(HeaderFile):
         super().__init__(path)
 
     def appendData(self, species: str, prevMon: str = "BULBASAUR"):
-        # front pic
-        idx = self.findLine(f'gMonFrontPic_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'const u32 gMonFrontPic_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/anim_front.4bpp.lz\");\n')
 
-        # back pic
-        idx = self.findLine(f'gMonBackPic_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'const u32 gMonBackPic_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/back.4bpp.lz\");\n')
+        strings = [f'const u32 gMonStillFrontPic_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/front.4bpp.lz\");\n',
+                   f'const u32 gMonPalette_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/normal.gbapal.lz\");\n',
+                   f'const u32 gMonBackPic_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/back.4bpp.lz\");\n',
+                   f'const u32 gMonShinyPalette_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/shiny.gbapal.lz\");\n',
+                   f'const u8 gMonIcon_{species.title()}[] = INCBIN_U8(\"graphics/pokemon/{species.casefold()}/icon.4bpp\");\n',
+                   f'const u8 gMonFootprint_{species.title()}[] = INCBIN_U8(\"graphics/pokemon/{species.casefold()}/footprint.1bpp\");\n']
 
-        # palette
-        idx = self.findLine(f'gMonPalette_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'const u32 gMonPalette_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/normal.gbapal.lz\");\n')
-
-        # shiny palette
-        idx = self.findLine(f'gMonShinyPalette_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'const u32 gMonShinyPalette_{species.title()}[] = INCBIN_U32(\"graphics/pokemon/{species.casefold()}/shiny.gbapal.lz\");\n')
-
-        # icon
-        idx = self.findLine(f'gMonIcon_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
-        self.insertBlankLine(idx)
-        self.set_line(idx, f'const u8 gMonIcon_{species.title()}[] = INCBIN_U8(\"graphics/pokemon/{species.casefold()}/icon.4bpp\");\n')
-
-        #footprint
         idx = self.findLine(f'gMonFootprint_{prevMon.title()}') + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
-        self.set_line(idx, f'const u8 gMonFootprint_{species.title()}[] = INCBIN_U8(\"graphics/pokemon/{species.casefold()}/footprint.1bpp\");\n')
+        idx += 1
+
+        for string in strings:
+            self.insertBlankLine(idx)
+            self.set_line(idx, string)
+            idx += 1
 
 class LevelUpLearnsetsH(HeaderFile):
     def __init__(self, path: str):
@@ -434,7 +397,6 @@ class LevelUpLearnsetsH(HeaderFile):
 
     def appendData(self, formated_level_up_learnset: str, prevMon: str = "BULBASAUR"):
         idx = self.findLine("};", self.findLine(f's{prevMon.title()}LevelUpLearnset')) + 1
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, formated_level_up_learnset)
 
@@ -444,29 +406,26 @@ class LevelUpLearnsetPointersH(HeaderFile):
 
     def appendData(self, species: str, prevMon: str):
         idx = self.findLine(f'SPECIES_{prevMon.upper()}')
-        idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    [SPECIES_{species.upper()}] = s{species.title()}LevelUpLearnset,\n')
 
-class TeachableLearnsetH(HeaderFile):
+class TMHMLearnsetH(HeaderFile):
     def __init__(self, path: str):
         super().__init__(path)
 
-    def appendData(self, formated_teachable_learnset: str, prevMon: str = "BULBASAUR"):
-        idx = self.findLine("};", self.findLine(f's{prevMon.title()}TeachableLearnset')) + 1
-        idx = self._handleEndif(idx)
+    def appendData(self, formated_tmhm_learnset: str, species: str, prevMon: str):
+        idx = self.findLine("),", self.findLine(f'SPECIES_{prevMon.upper()}')) + 1
         self.insertBlankLine(idx)
-        self.set_line(idx, formated_teachable_learnset)
+        self.set_line(idx, formated_tmhm_learnset)
 
-class TeachableLearnsetPointersH(HeaderFile):
+class TutorLearnsetH(HeaderFile):
     def __init__(self, path: str):
         super().__init__(path)
 
-    def appendData(self, species: str, prevMon: str):
-        idx = self.findLine(f'SPECIES_{prevMon.upper()}') + 1
-        idx = self._handleEndif(idx)
+    def appendData(self, formated_tutor_learnset: str, species: str, prevMon: str):
+        idx = self.findLine("),", self.findLine(f'SPECIES_{prevMon.upper()}')) + 1
         self.insertBlankLine(idx)
-        self.set_line(idx, f'    [SPECIES_{species.upper()}] = s{species.title()}TeachableLearnset,\n')
+        self.set_line(idx, formated_tutor_learnset)
 
 class EggMovesH(HeaderFile):
     def __init__(self, path: str):
@@ -507,7 +466,7 @@ class PokemonC(SourceFile):
         idx = self.findLine(f'SPECIES_{prevMon.upper()} - 1') + 1
         idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
-        self.set_line(idx, f'    [SPECIES_{species.upper()} - 1]'.ljust(32) + f'= {animation.upper()},\n')
+        self.set_line(idx, f'    [SPECIES_{species.upper()} - 1]'.ljust(30) + f'= {animation.upper()},\n')
 
 class PokemonIconC(SourceFile):
     def __init__(self, path: str):
@@ -540,4 +499,14 @@ class PokemonAnimationC(SourceFile):
 
         self._handleEndif(idx)
         self.insertBlankLine(idx)
-        self.set_line(idx, f'    [SPECIES_{species.upper()}]'.ljust(43) + f'= {animation},\n')
+        self.set_line(idx, f'    [SPECIES_{species.upper()}]'.ljust(25) + f'= {animation},\n')
+
+class AnimMonFrontPicsC(SourceFile):
+    def __init__(self, path):
+        super().__init__(path)
+
+    def appendData(self, species: str, prevMon: str):
+        idx = self.findLine(f'gMonFrontPic_{prevMon.title()}') + 1
+        self.insertBlankLine(idx)
+        self.set_line(idx, f'const u32 gMonFrontPic_{species.title()}[] = INCBIN_U32("graphics/pokemon/{species.casefold()}/anim_front.4bpp.lz");\n')
+
