@@ -2,6 +2,8 @@
 this file contains formated string that are a little more complicated
 to not clutter the PokemonData class even more
 '''
+import logging
+log = logging.getLogger("myLogger")
 
 def formatSpeciesInfo(name, species_info):
     formated_species_info = f'''
@@ -29,8 +31,9 @@ def formatSpeciesInfo(name, species_info):
         .friendship = {species_info["friendship"]},
         .growthRate = {species_info["growthRate"]},
         .eggGroups = {{ {species_info["eggGroups"]["eggGroup1"]}, {species_info["eggGroups"]["eggGroup2"]} }},
-        .abilities = {{ {species_info["abilities"]["ability1"]}, {species_info["abilities"]["ability2"]}, {species_info["abilities"]["abilityHidden"]} }},
+        .abilities = {{ {species_info["abilities"]["ability1"]}, {species_info["abilities"]["ability2"]} }},
         .bodyColor = {species_info["bodyColor"]},
+        .safariZoneFleeRate = {species_info["safariZoneFleeRate"]},
         .noFlip = {str(species_info["noFlip"]).upper()},
     }},
 '''
@@ -66,29 +69,36 @@ def formatEvolutionData(name, evolution_data):
     if len(evolution_data) <= 0: #safety
         return ""
 
-    formated_evolution_data = f'    [SPECIES_{name.upper()}]'.ljust(36) + '= {' + f'{{{evolution_data[0]["method"]}, {evolution_data[0]["param"]}, {evolution_data[0]["targetSpecies"]}}}'
+    formated_evolution_data = f'    [SPECIES_{name.upper()}]'.ljust(25) + '= {' + f'{{{evolution_data[0]["method"]}, {evolution_data[0]["param"]}, {evolution_data[0]["targetSpecies"]}}}'
     if len(evolution_data) > 1:
-        formated_evolution_data += ",\n"
-    for i in range(1, len(evolution_data)):
-        formated_evolution_data += "".ljust(39) + f'{{{evolution_data[i]["method"]}, {evolution_data[i]["param"]}, {evolution_data[i]["targetSpecies"]}}}'
-        if i < len(evolution_data)-1:
+        for evo in evolution_data[1:]:
             formated_evolution_data += ",\n"
+            formated_evolution_data += "".ljust(28) + f'{{{evo["method"]}, {evo["param"]}, {evo["targetSpecies"]}}}'
     formated_evolution_data += '},\n'
     return formated_evolution_data
 
 def formatLevelUplearnset(name, level_up_learnset):
-    formated_level_up_learnset = f'\nstatic const struct LevelUpMove s{name.title()}LevelUpLearnset[]'+' = {\n'
+    formated_level_up_learnset = f'\nstatic const u16 s{name.title()}LevelUpLearnset[]'+' = {\n'
     for move in level_up_learnset:
         formated_level_up_learnset += f'    LEVEL_UP_MOVE({" " if move["level"] < 10 else ""}{move["level"]}, {move["move"]}),\n'
     formated_level_up_learnset += f'    LEVEL_UP_END\n'+'};\n'
     return formated_level_up_learnset
 
-def formatTeachablelearnset(name, teachable_learnset):
-    foramted_teachable_learnset = f'\nstatic const u16 s{name.title()}TeachableLearnset[]'+' = {\n'
-    for move in teachable_learnset:
-        foramted_teachable_learnset += f'    {move["move"]},\n'
-    foramted_teachable_learnset += '    MOVE_UNAVAILABLE,\n'+'};\n'
-    return foramted_teachable_learnset
+def formatTMHMLearnset(name, tmhm_learnset):
+    formated_tmhm_learnset = f'\n    [SPECIES_{name.upper()}]'.ljust(27) + f'= TMHM_LEARNSET(TMHM({tmhm_learnset[0]["move"]})'
+    if len(tmhm_learnset) > 1:
+        for move in tmhm_learnset[1:]:
+            formated_tmhm_learnset += "\n".ljust(41) + f'| TMHM({move["move"]})'
+    formated_tmhm_learnset += "),\n"
+    return formated_tmhm_learnset
+
+def formatTutorLearnset(name, tutor_learnset):
+    formated_tutor_learnset = f'\n    [SPECIES_{name.upper()}]'.ljust(32) + f'= (TUTOR({tutor_learnset[0]["move"]})'
+    if len(tutor_learnset) > 1:
+        for move in tutor_learnset[1:]:
+            formated_tutor_learnset += "\n".ljust(33) + f'| TUTOR({move["move"]})'
+    formated_tutor_learnset += "),\n"
+    return formated_tutor_learnset
 
 def formatEgglearnset(name, egg_learnset):
     i = 1
@@ -101,11 +111,12 @@ def formatEgglearnset(name, egg_learnset):
     return formated_egg_learnset
 
 def formatPicCoordinates(name, pic_coordinates):
-    formated_pic_coordinates = f'    [SPECIES_{name.upper()}]'.ljust(43) + f'= {{ .size = MON_COORDS_SIZE({pic_coordinates["x"]}, {pic_coordinates["y"]}), .y_offset = {" " if pic_coordinates["y_offset"] < 10 else ""}{pic_coordinates["y_offset"]} }},\n'
+    formated_pic_coordinates = f'    [SPECIES_{name.upper()}]'.ljust(26) + f'= {{ .size = MON_COORDS_SIZE({pic_coordinates["x"]}, {pic_coordinates["y"]}), .y_offset = {" " if pic_coordinates["y_offset"] < 10 else ""}{pic_coordinates["y_offset"]} }},\n'
     return formated_pic_coordinates
 
 def formatFrontPicAnim(name):
-    formated_front_pic_anim = f'''static const union AnimCmd sAnim_{name.title()}_1[] =
+    formated_front_pic_anim = f'''
+static const union AnimCmd sAnim_{name.title()}_1[] =
 {{
     ANIMCMD_FRAME(0, 1),
     ANIMCMD_END,

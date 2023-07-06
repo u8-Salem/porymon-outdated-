@@ -27,8 +27,7 @@
 
         "abilities" : {
             "ability1"      : "ABILITY_CHLOROPHYLL",
-            "ability2"      : "ABILITY_NONE",
-            "abilityHidden" : "ABILITY_RIPEN"
+            "ability2"      : "ABILITY_NONE"
         },
 
         "items" : {
@@ -36,14 +35,15 @@
             "itemRare"      : "ITEM_MOON_STONE"
         },
 
-        "catchRate"   : 255,
-        "expYield"    : 600,
-        "genderRatio" : 255,
-        "eggCycles"   : 255,
-        "friendship"  : 255,
-        "growthRate"  : 1,
-        "bodyColor"   : "BODY_COLOR_PINK",
-        "noFlip"      : false,
+        "catchRate"          : 255,
+        "expYield"           : 255,
+        "genderRatio"        : 255,
+        "eggCycles"          : 255,
+        "friendship"         : 255,
+        "growthRate"         : 1,
+        "bodyColor"          : "BODY_COLOR_PINK",
+        "safariZoneFleeRate" : 0,
+        "noFlip"             : false,
 
         "eggGroups" : {
             "eggGroup1" : "EGG_GROUP_UNDISCOVERED",
@@ -82,9 +82,17 @@
         { "level" : 10, "move" : "MOVE_EMBER" }
     ],
 
-    "teachable_learnset" : [
-        { "move" : "MOVE_THUNDERBOLT" },
-        { "move" : "MOVE_AERIAL_ACE" }
+    "tmhm_learnset" : [
+        { "move" : "TM39_ROCK_TOMB" },
+        { "move" : "TM44_REST" },
+        { "move" : "TM48_SKILL_SWAP" },
+        { "move" : "HM01_CUT" }
+    ],
+
+    "tutor_learnset" : [
+        { "move" : "MOVE_MEGA_PUNCH"},
+        { "move" : "MOVE_SWORDS_DANCE"},
+        { "move" : "MOVE_MEGA_KICK"}
     ],
 
     "egg_learnset" : [
@@ -107,7 +115,7 @@
         "y_offset" : 0
     },
 
-    "icon_pal_num" : 1
+    "icon_pal_num" : 2
 
 
 }
