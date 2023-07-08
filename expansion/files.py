@@ -24,50 +24,50 @@ class PokemonData(JsonFile):
 
     def _initSpeciesInfo(self):
         self.species = self._file["species_info"]["species_name"]
-        self._species_info = self._file["species_info"]
+        self.species_info = self._file["species_info"]
         self._formatSpeciesInfo()
 
     def _initPokedex(self):
-        self._pokedex_data = self._file["pokedex_data"]
-        self._pokedex_text = self._file["pokedex_data"]["description"]
+        self.pokedex_data = self._file["pokedex_data"]
+        self.pokedex_text = self._file["pokedex_data"]["description"]
         self._formatPokedex()
 
     def _initEvolution(self):
         self.hasEvo = True if len(self._file["evolution_data"]) > 0 else False
         if self.hasEvo:
-            self._evolution_data = self._file["evolution_data"]
+            self.evolution_data = self._file["evolution_data"]
             self._formatEvolution()
 
     def _initMoveData(self):
-        self._level_up_learnset = self._file["level_up_learnset"]
-        self._teachable_learnset = self._file["teachable_learnset"]
-        self._egg_learnset = self._file["egg_learnset"]
+        self.level_up_learnset = self._file["level_up_learnset"]
+        self.teachable_learnset = self._file["teachable_learnset"]
+        self.egg_learnset = self._file["egg_learnset"]
         self.hasEggMove = True if len(self._file["egg_learnset"]) > 0 else False
         self._formatLearnsets()
 
     def _initPicData(self):
         self.icon_pal_num = self._file["icon_pal_num"]
-        self._back_pic_coordinates = self._file["back_pic_coordinates"]
-        self._front_pic_coordinates = self._file["front_pic_coordinates"]
+        self.back_pic_coordinates = self._file["back_pic_coordinates"]
+        self.front_pic_coordinates = self._file["front_pic_coordinates"]
         self._formatPicCoordinates()
 
     def _initAnims(self):
         self._formatFrontPicAnims()
 
     def _formatSpeciesInfo(self):
-        self.formated_species_info = formatSpeciesInfo(self.species, self._species_info)
+        self.formated_species_info = formatSpeciesInfo(self.species, self.species_info)
     def _formatPokedex(self):
-        self.formated_pokedex_data = formatPokedexData(self.species, self._pokedex_data)
-        self.formated_pokedex_text = formatPokedexText(self.species, self._pokedex_text)
+        self.formated_pokedex_data = formatPokedexData(self.species, self.pokedex_data)
+        self.formated_pokedex_text = formatPokedexText(self.species, self.pokedex_text)
     def _formatEvolution(self):
-        self.formated_evolution_data = formatEvolutionData(self.species, self._evolution_data)
+        self.formated_evolution_data = formatEvolutionData(self.species, self.evolution_data)
     def _formatLearnsets(self):
-        self.formated_level_up_learnset = formatLevelUplearnset(self.species, self._level_up_learnset)
-        self.formated_teachable_learnset = formatTeachablelearnset(self.species, self._teachable_learnset)
-        self.formated_egg_learnset = formatEgglearnset(self.species, self._egg_learnset)
+        self.formated_level_up_learnset = formatLevelUplearnset(self.species, self.level_up_learnset)
+        self.formated_teachable_learnset = formatTeachablelearnset(self.species, self.teachable_learnset)
+        self.formated_egg_learnset = formatEgglearnset(self.species, self.egg_learnset)
     def _formatPicCoordinates(self):
-        self.formated_back_pic_coordinates = formatPicCoordinates(self.species, self._back_pic_coordinates)
-        self.formated_front_pic_coordinates = formatPicCoordinates(self.species, self._front_pic_coordinates)
+        self.formated_back_pic_coordinates = formatPicCoordinates(self.species, self.back_pic_coordinates)
+        self.formated_front_pic_coordinates = formatPicCoordinates(self.species, self.front_pic_coordinates)
     def _formatFrontPicAnims(self):
         self.formated_front_pic_anim = formatFrontPicAnim(self.species)
 
@@ -362,7 +362,7 @@ class FootprintTableH(HeaderFile):
         super().__init__(path)
 
     def appendData(self, species, prevMon):
-        idx = self.findLine(f'SPECIES_{prevMon.upper()}') + 1
+        idx = self.findLine(f'SPECIES_EGG') - 1 # not happy with this
         idx = self._handleEndif(idx)
         self.insertBlankLine(idx)
         self.set_line(idx, f'    [SPECIES_{species.upper()}] = gMonFootprint_{species.title()},\n')
