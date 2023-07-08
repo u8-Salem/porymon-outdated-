@@ -104,7 +104,7 @@ def formatEgglearnset(name, egg_learnset):
     i = 1
     formated_egg_learnset = f'    egg_moves({name.upper()},'
     for move in egg_learnset:
-        formated_egg_learnset += f'\n        {move["move"]}'
+        formated_egg_learnset += '\n'.ljust(15) + f'{move["move"]}'
         formated_egg_learnset += ',' if i < len(egg_learnset) else ""
         i += 1
     formated_egg_learnset += '),\n'
