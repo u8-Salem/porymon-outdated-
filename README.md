@@ -77,7 +77,7 @@ If you want to contribute to porymon in any way, please do so here on GitHub. Ei
 
 ## SUPER IMPORTANT INFORMATION
 
-Please note that this is my first own application and therfore probably ... **shit**...
+Please note that this is my first own application and therfore probably ... **not groundbreaking**...
 Porymon is a learning opportunity for me and I treat it as such. If you think certain things arent done properly feel free to offer *constructive criticism*.
 
 At the same time it is a project I do in my free time. Should porymon ever be out of date or broken in any other form please let me know but dont expect it to be addressed immediately (or at all). I might loose interest, not have time available or move on entirely. Should I ever go MIA I am fine with anyone picking up where I left of and keep developing porymon.
