@@ -7,6 +7,7 @@ At the moment porymon is no more than a simple Python script that can be run loc
 Please note that porymon does **NOT** work with [vanilla pokeemerald](https://github.com/pret/pokeemerald) currently and might not work with older version of the expansion. Please refer to the **Limitations** below for more information.
 
 ## How to use porymon
+**USE DEV BRANCH FOR NOW! MAIN HAS SOME ISSUES THAT ARE FIXED ON DEV**
 
 To use porymon simply download it from the release page and follow the instructions below.
 
