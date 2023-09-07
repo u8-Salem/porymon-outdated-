@@ -2,12 +2,11 @@
 
 ## What is porymon?
 
-Porymon is a simple tool that allows users to add new Pokemon to their [pokeemerald-expansion](https://github.com/rh-hideout/pokeemerald-expansion) projects, without having to edit 24(!) different files themselves.
+Porymon is a simple tool that allows users to add new Pokemon to their [pokeemerald](https://github.com/pret/pokeemerald) or [pokeemerald-expansion](https://github.com/rh-hideout/pokeemerald-expansion) projects, without having to edit dozens of different files themselves.
 At the moment porymon is no more than a simple Python script that can be run locally, but I hope to turn it into a full application eventually.
-Please note that porymon does **NOT** work with [vanilla pokeemerald](https://github.com/pret/pokeemerald) currently and might not work with older version of the expansion. Please refer to the **Limitations** below for more information.
+Please note that porymon might not work with older version of the expansion. Please refer to the **Limitations** below for more information.
 
 ## How to use porymon
-**USE DEV BRANCH FOR NOW! MAIN HAS SOME ISSUES THAT ARE FIXED ON DEV**
 
 To use porymon simply download it from the release page and follow the instructions below.
 
@@ -16,15 +15,17 @@ To use porymon simply download it from the release page and follow the instructi
 - Replace the current path with your own path to the pokeemerald-expansion.
     - please not that you destination folder might be named differently. Please use whatever your root directory. It is the one that contains the makefile.
     - os specific path separators matter! use the correct one.
-- Create a new folder and name it after your new pokemon.
+- Specify which version you are using. Allowed versions are: "vanilla" and "expansion".
+- Inside the directory that corresponds to your version, create a new directory and name it after your pokemon.
 - Copy the `pokemon_data.json` from the example folder `potato` into your newly created folder and fill out all the information inside of it.
     - most of these things should be self explanatory, however make sure to use the proper macros or literals where ever necessary.
     - E.g. to assign the move "Growl" to a movepool use either `MOVE_GROWL` or `45`. I advice to use the macros however.
 - Move the assets for front pic, back pic, icon and footprints into the same folder and name them as follows:
-    - front pic : `front_anim.png`
-    - back pic  : `back.png`
-    - icon      : `icon.png`
-    - footprint : `footprint.png`
+    - anim. front pic  : `anim_anim.png`
+    - static front pic : `front.png`
+    - back pic         : `back.png`
+    - icon             : `icon.png`
+    - footprint        : `footprint.png`
     - porymon does **not** support inserting cries at the moment
 - Also move your palettes into the same folder and name them as follows:
     - normal pal : `normal.pal`
@@ -39,10 +40,8 @@ To use porymon simply download it from the release page and follow the instructi
 
 The current implementation of porymon is very much a work-in-progress and has several limitations that I hope to overcome eventually.
 
-- No compatability with vanilla pokeemerald or modified/outdated version
-    - due to drastic differences between a vanilla pokeemerald project and an expansion project, porymon will not work with vanilla projects at the moment. I developed it for the expansion since that is what I use personally and for the debugging and testing features it provides.
-    - I hope to eventually support vanilla pokeemerald aswell but for now it will stay expansion only as I address more important matters
-    - Similarly, any project that differs substantially from an up-to-date expansion project *might* not work. If in doubt, try it and see if it works.
+- No compatability with modified/outdated version
+    - Any project that differs substantially from an up-to-date expansion or vanilla project *might* not work. If in doubt, try it and see if it works.
     - Porymon was designed with customizability in mind. If you want to adapt it feel free to do so.
 
 - Porymon does **not** check the sanity of the provided data.
@@ -64,8 +63,6 @@ The current implementation of porymon is very much a work-in-progress and has se
 
 - Anything regarding animations can not be specified in `pokemon_data.json` at the moment
     - Placeholder/Standard animations are still being added and can be modified after the fact
-
-- Only `front_anim.png` formated front sprites. regular `front.png` may follow
 
 - No Cry insertion.
     - eventually
